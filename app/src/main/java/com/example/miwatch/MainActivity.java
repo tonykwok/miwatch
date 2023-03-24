@@ -14,7 +14,6 @@ import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import java.io.IOException;
 import java.util.Locale;
@@ -22,17 +21,20 @@ import java.util.Locale;
 import tv.danmaku.ijk.media.player.IjkMediaPlayer;
 
 public class MainActivity extends AppCompatActivity implements SurfaceHolder.Callback {
-    static final String TAG = "MainActivity";
+    private static final String TAG = "MainActivity";
 
-    TextView mTextView;
-    SurfaceView mSurfaceView;
-    Surface mSurface;
+    private static final int DEFAULT_RTSP_PORT = 8086;
 
-    boolean mIsStreaming;
+    private TextView mTextView;
+    private SurfaceView mSurfaceView;
+    private Surface mSurface;
 
-    IjkMediaPlayer mMediaPlayer;
+    private boolean mIsStreaming;
 
-    String mIp = "";
+    private IjkMediaPlayer mMediaPlayer;
+
+    private String mIp;
+    private int mPort;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -79,10 +81,11 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
             mTextView.setText("\"miwatch.streaming.ip\" unspecified");
             return;
         }
+        mPort = SystemProperties.getInt("miwatch.streaming.port", DEFAULT_RTSP_PORT);
         // See https://support.video.ibm.com/hc/en-us/articles/207852117-Internet-connection-and-recommended-encoding-settings
         // for Recommended Encoding Settings
         // URL = [ip-address]%s[h264|h265]-[kilo-bit-per-second]-[frame-rate]-[frame-width]-[frame-height]
-        String url = String.format(Locale.US, "rtsp://%s?h264=2000-30-%d-%d", mIp, width, height);
+        String url = String.format(Locale.US, "rtsp://%s:%d?h264=2000-30-%d-%d", mIp, mPort, width, height);
         Log.d(TAG, "startStreaming: " + url);
         mTextView.setText(url);
         startStreaming(url);
