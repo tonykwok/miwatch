@@ -16,6 +16,9 @@ import android.view.WindowManager;
 import android.widget.TextView;
 
 import java.io.IOException;
+import java.net.Inet6Address;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.Locale;
 
 import tv.danmaku.ijk.media.player.IjkMediaPlayer;
@@ -85,10 +88,23 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
         // See https://support.video.ibm.com/hc/en-us/articles/207852117-Internet-connection-and-recommended-encoding-settings
         // for Recommended Encoding Settings
         // URL = [ip-address]%s[h264|h265]-[kilo-bit-per-second]-[frame-rate]-[frame-width]-[frame-height]
-        String url = String.format(Locale.US, "rtsp://%s:%d?h264=2000-30-%d-%d", mIp, mPort, width, height);
+        // String.format(Locale.US, "rtsp://%s:%d?h264=2000-30-%d-%d", mIp, mPort, width, height);
+        String url = buildRtspUrl(mIp, mPort, width, height);
         Log.d(TAG, "startStreaming: " + url);
         mTextView.setText(url);
         startStreaming(url);
+    }
+
+    private static String buildRtspUrl(String ip, int port, int width, int height) {
+        try {
+            InetAddress address = InetAddress.getByName(ip);
+            if (address instanceof Inet6Address) {
+                return String.format(Locale.US, "rtsp://[%s]:%d?h264=2000-30-%d-%d", ip, port, width, height);
+            }
+            return String.format(Locale.US, "rtsp://%s:%d?h264=2000-30-%d-%d", ip, port, width, height);
+        } catch(UnknownHostException e) {
+            throw new IllegalArgumentException(e);
+        }
     }
 
     @Override
